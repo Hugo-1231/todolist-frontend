@@ -1,0 +1,110 @@
+:root {
+  /* ===== Linear 风格配色 token ===== */
+  --bg: #f7f7f5;             /* 页面背景：暖白灰 */
+  --bg-hover: #f2f2ef;       /* 悬停背景 */
+  --card: #ffffff;           /* 卡片 / 表面 */
+  --border: #e8e8e4;         /* 细边框 */
+  --border-strong: #d9d9d4;
+
+  --text-1: #1d1d1f;         /* 主文字 */
+  --text-2: #6e6e73;         /* 次要文字 */
+  --text-3: #9a9aa0;         /* 弱文字 */
+
+  --primary: #5e6ad2;        /* Linear 主色（紫蓝） */
+  --primary-hover: #4f56b0;
+  --primary-light: #eef0fb;  /* 主色浅背景 */
+
+  --success: #2f9e63;        /* 完成绿 */
+  --warning: #d97706;
+  --danger: #d64545;         /* 柔和红 */
+
+  /* 阴影：克制，几乎靠边框表达层次 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+
+  /* 圆角：小圆角更精致 */
+  --radius: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  /* 覆盖 Element Plus 主题色 */
+  --el-color-primary: #5e6ad2;
+  --el-color-primary-light-3: #7e88dd;
+  --el-color-primary-light-5: #a4ace8;
+  --el-color-primary-light-7: #c9cff2;
+  --el-color-primary-light-8: #dcdfef;
+  --el-color-primary-light-9: #eef0fb;
+  --el-color-primary-dark-2: #4f56b0;
+  --el-border-radius-base: 8px;
+}
+
+/* ===== 深色主题 ===== */
+html.dark {
+  --bg: #161616;
+  --bg-hover: #1f1f1f;
+  --card: #202020;
+  --border: #2e2e2e;
+  --border-strong: #3a3a3a;
+
+  --text-1: #e8e8e6;
+  --text-2: #a6a6a2;
+  --text-3: #6f6f6c;
+
+  --primary: #6d78e8;
+  --primary-hover: #7f89ec;
+  --primary-light: #2b2e4d;
+
+  --success: #4ac47e;
+  --warning: #e0a83c;
+  --danger: #e56565;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue',
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d0;
+  border-radius: 8px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #bcbcb8;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
