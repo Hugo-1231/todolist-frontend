@@ -1,52 +1,15 @@
 <template>
   <div class="layout">
-    <!-- ===== 左侧边栏 ===== -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <span class="brand-mark"><el-icon :size="16"><Checked /></el-icon></span>
-        <span class="brand-name">待办清单</span>
-      </div>
-
-      <WeatherCard />
-
-      <nav class="nav">
-        <div class="nav-section">清单</div>
-        <a class="nav-item" :class="{ active: activeView === 'all' }" @click="setView('all')">
-          <el-icon><Tickets /></el-icon><span>全部</span><b class="nav-count">{{ stats.total }}</b>
-        </a>
-        <a class="nav-item" :class="{ active: activeView === 'today' }" @click="setView('today')">
-          <el-icon><Sunny /></el-icon><span>今天</span>
-        </a>
-        <a class="nav-item" :class="{ active: activeView === 'active' }" @click="setView('active')">
-          <el-icon><Loading /></el-icon><span>进行中</span><b class="nav-count">{{ stats.active }}</b>
-        </a>
-        <a class="nav-item" :class="{ active: activeView === 'completed' }" @click="setView('completed')">
-          <el-icon><CircleCheck /></el-icon><span>已完成</span><b class="nav-count">{{ stats.completed }}</b>
-        </a>
-
-        <div class="nav-section">筛选</div>
-        <a class="nav-item" :class="{ active: activeView === 'high' }" @click="setView('high')">
-          <el-icon><Warning /></el-icon><span>高优先级</span><b class="nav-count high">{{ stats.highPriority }}</b>
-        </a>
-        <a class="nav-item" @click="calendarVisible = true">
-          <el-icon><Calendar /></el-icon><span>按日期</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <a class="nav-item" @click="themeStore.toggle()">
-          <el-icon><Moon v-if="!themeStore.isDark" /><Sunny v-else /></el-icon>
-          <span>{{ themeStore.isDark ? '浅色模式' : '深色模式' }}</span>
-        </a>
-        <div class="user">
-          <span class="avatar">{{ authStore.nickname.charAt(0) }}</span>
-          <span class="user-name">{{ authStore.nickname }}</span>
-          <el-button text class="logout" title="退出登录" @click="logout">
-            <el-icon><SwitchButton /></el-icon>
-          </el-button>
-        </div>
-      </div>
-    </aside>
+    <!-- ===== 左侧边栏（桌面） ===== -->
+    <div class="sidebar-container">
+      <Sidebar
+        :stats="stats"
+        :active-view="activeView"
+        @navigate="onNavigate"
+        @open-calendar="calendarVisible = true"
+        @logout="logout"
+      />
+    </div>
 
     <!-- ===== 右侧内容 ===== -->
     <div class="content">
@@ -56,12 +19,11 @@
           <span class="date">{{ todayStr }}</span>
         </div>
         <div class="topbar-right">
-          <!-- 窄屏显示的主题切换 -->
+          <el-button text class="menu-btn" @click="drawerVisible = true">
+            <el-icon><Menu /></el-icon>
+          </el-button>
           <el-button text class="theme-mobile" @click="themeStore.toggle()">
             <el-icon><Moon v-if="!themeStore.isDark" /><Sunny v-else /></el-icon>
-          </el-button>
-          <el-button text class="logout-mobile" @click="logout">
-            <el-icon><SwitchButton /></el-icon>
           </el-button>
         </div>
       </header>
@@ -114,6 +76,14 @@
             </button>
           </div>
           <div class="toolbar-spacer" />
+
+          <el-button
+            class="cal-btn"
+            :class="{ active: filters.dueDate }"
+            @click="calendarVisible = true"
+          >
+            <el-icon><Calendar /></el-icon>{{ filters.dueDate || '日期' }}
+          </el-button>
 
           <el-select
             v-model="filters.priority"
@@ -202,6 +172,23 @@
       :todo="editingTodo"
       @success="refresh"
     />
+
+    <!-- 移动端抽屉侧边栏 -->
+    <el-drawer
+      v-model="drawerVisible"
+      direction="ltr"
+      size="280px"
+      :with-header="false"
+      class="mobile-drawer"
+    >
+      <Sidebar
+        :stats="stats"
+        :active-view="activeView"
+        @navigate="onNavigate"
+        @open-calendar="calendarVisible = true"
+        @logout="logout"
+      />
+    </el-drawer>
   </div>
 </template>
 
@@ -212,16 +199,11 @@ import { ElMessage } from 'element-plus'
 import {
   Search,
   Plus,
-  SwitchButton,
   Sunny,
   Moon,
   Calendar,
   EditPen,
-  Checked,
-  Tickets,
-  Loading,
-  CircleCheck,
-  Warning
+  Menu
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
@@ -236,7 +218,7 @@ import {
 import { PRIORITY_OPTIONS } from '../utils/priority'
 import TodoItem from '../components/TodoItem.vue'
 import TodoForm from '../components/TodoForm.vue'
-import WeatherCard from '../components/WeatherCard.vue'
+import Sidebar from '../components/Sidebar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -248,6 +230,7 @@ const loading = ref(false)
 const dateCounts = ref({})
 const calendarDate = ref(new Date())
 const calendarVisible = ref(false)
+const drawerVisible = ref(false)
 const quickTitle = ref('')
 const groupMode = ref('none')
 
@@ -426,6 +409,11 @@ function setView(view) {
   fetchTodos()
 }
 
+function onNavigate(view) {
+  setView(view)
+  drawerVisible.value = false
+}
+
 function onFilterChange() {
   fetchTodos()
 }
@@ -475,7 +463,8 @@ function openEdit(todo) {
   dialogVisible.value = true
 }
 
-async function handleToggle() {
+async function handleToggle(todo) {
+  await toggleTodo(todo.id)
   await refresh()
 }
 
@@ -501,133 +490,15 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-/* ===== 侧边栏 ===== */
-.sidebar {
+/* ===== 侧边栏容器（桌面） ===== */
+.sidebar-container {
   width: 232px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
   background: var(--card);
-  display: flex;
-  flex-direction: column;
-  padding: 16px 12px;
   position: sticky;
   top: 0;
   height: 100vh;
-}
-
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 4px 10px 16px;
-}
-
-.brand-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  background: var(--primary);
-}
-
-.brand-name {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.nav {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.nav-section {
-  padding: 12px 10px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: var(--text-2);
-  font-size: 14px;
-  user-select: none;
-  transition: background 0.12s, color 0.12s;
-}
-
-.nav-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-1);
-}
-
-.nav-item.active {
-  background: var(--primary-light);
-  color: var(--primary);
-  font-weight: 500;
-}
-
-.nav-item .el-icon {
-  font-size: 16px;
-}
-
-.nav-count {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--text-3);
-  font-weight: 500;
-}
-
-.nav-count.high {
-  color: var(--danger);
-}
-
-.sidebar-footer {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
-
-.user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px 0;
-}
-
-.avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.user-name {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.logout {
-  color: var(--text-3);
 }
 
 /* ===== 右侧内容 ===== */
@@ -797,6 +668,16 @@ onMounted(() => {
   flex: 1;
 }
 
+.cal-btn {
+  border-radius: 8px;
+}
+
+.cal-btn.active {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
 .tool-select {
   width: 110px;
 }
@@ -960,7 +841,7 @@ onMounted(() => {
 
 /* ===== 响应式：窄屏隐藏侧边栏 ===== */
 @media (max-width: 768px) {
-  .sidebar {
+  .sidebar-container {
     display: none;
   }
   .topbar {
@@ -975,7 +856,7 @@ onMounted(() => {
     padding-right: 16px;
   }
   .theme-mobile,
-  .logout-mobile {
+  .menu-btn {
     color: var(--text-2);
   }
   .toolbar {

@@ -16,6 +16,12 @@ const routes = [
     name: 'todos',
     component: () => import('../views/TodoList.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('../views/Profile.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
