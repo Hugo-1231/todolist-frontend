@@ -2,7 +2,9 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  // 导入外部环境变量import.meta.env.VITE_API_BASE_URL，可用于云部署，如果没有设置环境变量，则默认使用 '/api' 作为 baseURL
+  // 其中VITE_API_BASE_URL为环境变量名，可以是自己定义的，也可以是外部给出的
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api', 
   timeout: 10000
 })
 
